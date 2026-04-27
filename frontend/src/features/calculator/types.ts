@@ -1,11 +1,8 @@
-// TODO: add "power" once core operations are finished
-type BinaryOperation = "add" | "subtract" | "multiply" | "divide";
+type BinaryOperation = "add" | "subtract" | "multiply" | "divide" | "power"
 
-
-// TODO: These are optional. Will implement after the core operations are finished.
 type UnaryOperation = "sqrt" | "percentage"
 
-type Operation = BinaryOperation
+type Operation = BinaryOperation | UnaryOperation
 
 type CalculatorState = {
   /**
@@ -28,6 +25,16 @@ type CalculatorState = {
    * appending to it.
    */
   waitingForNextInput: boolean
+
+  /**
+   * Whether the current display represents an actual user-entered or
+   * backend-produced operand that can participate in a calculation.
+   *
+   * In short:
+   * - false means the display is informational or waiting context
+   * - true means the display is a usable operand/result
+   */
+  hasActiveInput: boolean
 
   /**
    * Whether a backend calculation request is currently in flight.
