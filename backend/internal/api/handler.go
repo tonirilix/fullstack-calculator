@@ -74,6 +74,9 @@ func mapCalculatorError(err error) (int, string, string) {
 	case errors.Is(err, calculator.ErrInvalidOperands):
 		return http.StatusBadRequest, "INVALID_OPERANDS", err.Error()
 
+	case errors.Is(err, calculator.ErrDivisionByZero):
+		return http.StatusUnprocessableEntity, "DIVISION_BY_ZERO", "Cannot divide by zero."
+
 	default:
 		return http.StatusInternalServerError, "INTERNAL_ERROR", "An unexpected error occurred."
 	}
