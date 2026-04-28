@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -16,9 +17,9 @@ type Handler struct {
 	calculator CalculatorService
 }
 
-func NewHandler(calculator CalculatorService) *Handler {
+func NewHandler(calculatorSvc CalculatorService) *Handler {
 	return &Handler{
-		calculator: calculator,
+		calculator: calculatorSvc,
 	}
 }
 
@@ -98,10 +99,14 @@ func writeError(w http.ResponseWriter, status int, code string, message string) 
 }
 
 func writeJSON(w http.ResponseWriter, status int, value any) {
+	var buffer bytes.Buffer
+
+	if err := json.NewEncoder(&buffer).Encode(value); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-
-	if err := json.NewEncoder(w).Encode(value); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-	}
+	_, _ = w.Write(buffer.Bytes())
 }
