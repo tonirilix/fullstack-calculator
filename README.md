@@ -3,7 +3,7 @@
 Small full-stack calculator built as a take-home submission. The app has a React + TypeScript frontend and a Go backend. The frontend renders a calculator UI and sends structured calculation requests to the backend, which remains the source of truth for arithmetic and validation.
 
 For the scoped product definition, see [docs/PRD.md](docs/PRD.md).  
-For representative AI planning and implementation prompts, see `docs/AI_PROMPTS.md` once added.
+For representative AI planning and implementation prompts, see [docs/AI_PROMPTS.md](docs/AI_PROMPTS.md).
 
 ## Stack
 
@@ -33,17 +33,17 @@ Prerequisites:
 - Node.js 20+ and npm
 - Go 1.26+
 
+From the repo root, create the frontend environment file:
+
+```bash
+echo "VITE_API_BASE_URL=http://localhost:8080" > frontend/.env
+```
+
 Install frontend dependencies:
 
 ```bash
 cd frontend
 npm install
-```
-
-Create a frontend env file:
-
-```bash
-echo "VITE_API_BASE_URL=http://localhost:8080" > frontend/.env
 ```
 
 ## Run
@@ -66,6 +66,19 @@ npm run dev
 
 Runs on `http://localhost:5173`.
 
+## Docker
+
+Docker is provided as an optional convenience for local review.
+
+```bash
+docker compose up --build
+```
+
+Services:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8080`
+
 ## Test
 
 Backend:
@@ -73,20 +86,16 @@ Backend:
 ```bash
 cd backend
 go test ./...
+go test ./... -cover
 ```
 
-Frontend unit tests:
+Frontend:
 
 ```bash
 cd frontend
 npm test
-```
-
-Frontend typecheck:
-
-```bash
-cd frontend
 npm run typecheck
+npm run test:coverage
 ```
 
 ## API Example
