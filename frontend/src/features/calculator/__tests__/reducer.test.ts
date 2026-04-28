@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import { initialCalculatorState } from "./constants"
-import { calculatorReducer } from "./reducer"
-import type { CalculatorState } from "./types"
+import { initialCalculatorState } from "../constants"
+import { calculatorReducer } from "../reducer"
+import type { CalculatorState } from "../types"
 
 describe("calculatorReducer", () => {
   it("handles digit input from the initial state", () => {

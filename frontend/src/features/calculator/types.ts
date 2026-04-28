@@ -47,4 +47,21 @@ type CalculatorState = {
   errorMessage: string | null
 }
 
-export type { BinaryOperation, UnaryOperation, Operation, CalculatorState }
+type CalculatorAction =
+  | { type: "digitPressed"; digit: string }
+  | { type: "decimalPressed" }
+  | { type: "binaryOperationSelected"; operation: BinaryOperation }
+  | { type: "backspacePressed" }
+  | { type: "clearPressed" }
+  | { type: "calculationStarted" }
+  | {
+      type: "chainedCalculationSucceeded"
+      result: number
+      nextOperation: BinaryOperation
+    }
+  | { type: "finalCalculationSucceeded"; result: number }
+  | { type: "standaloneUnaryCalculationSucceeded"; result: number }
+  | { type: "rightOperandUnaryCalculationSucceeded"; result: number }
+  | { type: "calculationFailed"; message: string }
+
+export type { BinaryOperation, UnaryOperation, Operation, CalculatorState, CalculatorAction }
