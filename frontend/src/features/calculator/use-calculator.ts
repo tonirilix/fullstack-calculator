@@ -1,5 +1,6 @@
-import { useReducer } from "react"
+import { useEffect, useReducer, useRef } from "react"
 
+import { CalculatorApiError, calculate } from "./api"
 import { initialCalculatorState } from "./constants"
 import { calculatorReducer } from "./reducer"
 import type { BinaryOperation, UnaryOperation } from "./types"
@@ -9,6 +10,51 @@ function useCalculator() {
     calculatorReducer,
     initialCalculatorState
   )
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort()
+    }
+  }, [])
+
+  const getDisplayValue = () => {
+    const value = Number(state.displayValue)
+    return Number.isFinite(value) ? value : null
+  }
+
+  const startRequest = async <T,>(
+    run: (signal: AbortSignal) => Promise<T>
+  ): Promise<T | null> => {
+    const controller = new AbortController()
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = controller
+
+    dispatch({ type: "calculationStarted" })
+
+    try {
+      return await run(controller.signal)
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return null
+      }
+
+      if (error instanceof CalculatorApiError) {
+        dispatch({ type: "calculationFailed", message: error.message })
+        return null
+      }
+
+      dispatch({
+        type: "calculationFailed",
+        message: "Unable to reach the server. Please try again.",
+      })
+      return null
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null
+      }
+    }
+  }
 
   const pressDigit = (digit: string) => {
     dispatch({ type: "digitPressed", digit })
@@ -19,15 +65,97 @@ function useCalculator() {
   }
 
   const pressBinaryOperation = (operation: BinaryOperation) => {
-    dispatch({ type: "binaryOperationSelected", operation })
+    if (
+      state.isLoading ||
+      state.errorMessage ||
+      state.pendingOperation === null ||
+      !state.hasActiveInput ||
+      state.storedValue === null
+    ) {
+      dispatch({ type: "binaryOperationSelected", operation })
+      return
+    }
+
+    const rightOperand = getDisplayValue()
+
+    if (rightOperand === null) {
+      return
+    }
+
+    void startRequest(async (signal) => {
+      const response = await calculate({
+        operation: state.pendingOperation,
+        operands: [state.storedValue as number, rightOperand],
+        signal,
+      })
+
+      dispatch({
+        type: "chainedCalculationSucceeded",
+        result: response.result,
+        nextOperation: operation,
+      })
+    })
   }
 
-  const pressUnaryOperation = (_operation: UnaryOperation) => {
-    // Unary operations are intentionally not wired yet.
+  const pressUnaryOperation = (operation: UnaryOperation) => {
+    if (state.isLoading || state.errorMessage || !state.hasActiveInput) {
+      return
+    }
+
+    const operand = getDisplayValue()
+
+    if (operand === null) {
+      return
+    }
+
+    const isRightOperandUnary =
+      state.pendingOperation !== null && state.storedValue !== null
+
+    void startRequest(async (signal) => {
+      const response = await calculate({
+        operation,
+        operands: [operand],
+        signal,
+      })
+
+      dispatch({
+        type: isRightOperandUnary
+          ? "rightOperandUnaryCalculationSucceeded"
+          : "standaloneUnaryCalculationSucceeded",
+        result: response.result,
+      })
+    })
   }
 
   const pressEquals = () => {
-    // Final calculation orchestration is intentionally not wired yet.
+    if (
+      state.isLoading ||
+      state.errorMessage ||
+      state.pendingOperation === null ||
+      !state.hasActiveInput ||
+      state.storedValue === null
+    ) {
+      return
+    }
+
+    const rightOperand = getDisplayValue()
+
+    if (rightOperand === null) {
+      return
+    }
+    
+    void startRequest(async (signal) => {
+      const response = await calculate({
+        operation: state.pendingOperation,
+        operands: [state.storedValue as number, rightOperand],
+        signal,
+      })
+
+      dispatch({
+        type: "finalCalculationSucceeded",
+        result: response.result,
+      })
+    })
   }
 
   const pressBackspace = () => {
@@ -35,6 +163,8 @@ function useCalculator() {
   }
 
   const pressClear = () => {
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = null
     dispatch({ type: "clearPressed" })
   }
 
