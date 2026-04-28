@@ -5,6 +5,8 @@ Small full-stack calculator built as a take-home submission. The app has a React
 For the scoped product definition, see [docs/PRD.md](docs/PRD.md).  
 For representative AI planning and implementation prompts, see [docs/AI_PROMPTS.md](docs/AI_PROMPTS.md).
 
+![Calculator UI](docs/calculator.jpg)
+
 ## Stack
 
 - Frontend: React 19, TypeScript, Vite, Tailwind CSS
