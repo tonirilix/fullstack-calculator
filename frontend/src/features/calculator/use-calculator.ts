@@ -18,12 +18,12 @@ function useCalculator() {
     }
   }, [])
 
-  const getDisplayValue = () => {
+  const getFiniteDisplayValue = () => {
     const value = Number(state.displayValue)
     return Number.isFinite(value) ? value : null
   }
 
-  const startRequest = async <T,>(
+  const runCalculationRequest = async <T>(
     run: (signal: AbortSignal) => Promise<T>
   ): Promise<T | null> => {
     const controller = new AbortController()
@@ -76,16 +76,21 @@ function useCalculator() {
       return
     }
 
-    const rightOperand = getDisplayValue()
+    const rightOperand = getFiniteDisplayValue()
+    const { storedValue, pendingOperation } = state
 
-    if (rightOperand === null) {
+    if (
+      rightOperand === null ||
+      storedValue === null ||
+      pendingOperation === null
+    ) {
       return
     }
 
-    void startRequest(async (signal) => {
+    void runCalculationRequest(async (signal) => {
       const response = await calculate({
-        operation: state.pendingOperation,
-        operands: [state.storedValue as number, rightOperand],
+        operation: pendingOperation,
+        operands: [storedValue, rightOperand],
         signal,
       })
 
@@ -102,7 +107,7 @@ function useCalculator() {
       return
     }
 
-    const operand = getDisplayValue()
+    const operand = getFiniteDisplayValue()
 
     if (operand === null) {
       return
@@ -111,7 +116,7 @@ function useCalculator() {
     const isRightOperandUnary =
       state.pendingOperation !== null && state.storedValue !== null
 
-    void startRequest(async (signal) => {
+    void runCalculationRequest(async (signal) => {
       const response = await calculate({
         operation,
         operands: [operand],
@@ -138,16 +143,21 @@ function useCalculator() {
       return
     }
 
-    const rightOperand = getDisplayValue()
+    const rightOperand = getFiniteDisplayValue()
+    const { pendingOperation, storedValue } = state
 
-    if (rightOperand === null) {
+    if (
+      rightOperand === null ||
+      pendingOperation === null ||
+      storedValue === null
+    ) {
       return
     }
-    
-    void startRequest(async (signal) => {
+
+    void runCalculationRequest(async (signal) => {
       const response = await calculate({
-        operation: state.pendingOperation,
-        operands: [state.storedValue as number, rightOperand],
+        operation: pendingOperation,
+        operands: [storedValue, rightOperand],
         signal,
       })
 

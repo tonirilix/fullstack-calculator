@@ -7,7 +7,6 @@ import * as calculatorApi from "../../api"
 import { binaryOperationLabels } from "../../constants"
 
 describe("Calculator", () => {
-
   it("shows a loading state when operation is triggered", async () => {
     const user = userEvent.setup()
     render(<Calculator />)

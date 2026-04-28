@@ -1,7 +1,4 @@
-import {
-  binaryOperationLabels,
-  unaryOperationLabels,
-} from "../constants"
+import { binaryOperationLabels, unaryOperationLabels } from "../constants"
 import type { BinaryOperation, UnaryOperation } from "../types"
 import { CalculatorButton } from "./calculator-button"
 

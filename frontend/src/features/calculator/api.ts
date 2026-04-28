@@ -23,54 +23,97 @@ class CalculatorApiError extends Error {
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"
 
+const INVALID_RESPONSE_MESSAGE = "Received an invalid response from the server."
+const NETWORK_ERROR_MESSAGE = "Unable to reach the server. Please try again."
+
 async function calculate({
   operation,
   operands,
   signal,
 }: CalculateParams): Promise<CalculateResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/calculate`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ operation, operands }),
-    signal,
-  })
+  let response: Response
+
+  try {
+    response = await fetch(`${API_BASE_URL}/api/calculate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ operation, operands }),
+      signal,
+    })
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw error
+    }
+
+    throw new CalculatorApiError("NETWORK_ERROR", NETWORK_ERROR_MESSAGE)
+  }
 
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as
-      | {
-          error?: {
-            code?: string
-            message?: string
-          }
-        }
-      | null
+    const payload = await parseJsonSafely(response)
 
-    if (payload?.error?.code && payload.error.message) {
+    if (isBackendErrorResponse(payload)) {
       throw new CalculatorApiError(payload.error.code, payload.error.message)
     }
 
-    throw new CalculatorApiError(
-      "INVALID_RESPONSE",
-      "Received an invalid response from the server."
-    )
+    throw new CalculatorApiError("INVALID_RESPONSE", INVALID_RESPONSE_MESSAGE)
   }
 
-  const payload = (await response.json()) as Partial<CalculateResponse>
+  const payload = await parseJsonSafely(response)
 
-  if (
-    typeof payload.result !== "number" ||
-    Number.isNaN(payload.result) ||
-    !Number.isFinite(payload.result)
-  ) {
-    throw new CalculatorApiError(
-      "INVALID_RESPONSE",
-      "Received an invalid response from the server."
-    )
+  if (!isCalculateResponse(payload)) {
+    throw new CalculatorApiError("INVALID_RESPONSE", INVALID_RESPONSE_MESSAGE)
   }
 
-  return { result: payload.result }
+  return payload
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError"
+}
+
+async function parseJsonSafely(response: Response): Promise<unknown> {
+  try {
+    return await response.json()
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw error
+    }
+
+    return null
+  }
+}
+
+function isCalculateResponse(payload: unknown): payload is CalculateResponse {
+  if (payload === null || typeof payload !== "object") {
+    return false
+  }
+
+  const result = (payload as Partial<CalculateResponse>).result
+
+  return typeof result === "number" && Number.isFinite(result)
+}
+
+function isBackendErrorResponse(
+  payload: unknown
+): payload is { error: { code: string; message: string } } {
+  if (payload === null || typeof payload !== "object") {
+    return false
+  }
+
+  const error = (payload as { error?: unknown }).error
+
+  if (error === null || typeof error !== "object") {
+    return false
+  }
+
+  const { code, message } = error as {
+    code?: unknown
+    message?: unknown
+  }
+
+  return typeof code === "string" && typeof message === "string"
 }
 
 export { CalculatorApiError, calculate }

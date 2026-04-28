@@ -9,7 +9,10 @@ type CalculatorButtonProps = {
   tone?: "digit" | "utility" | "operator" | "equals"
 }
 
-const toneClasses: Record<NonNullable<CalculatorButtonProps["tone"]>, string> = {
+const toneClasses: Record<
+  NonNullable<CalculatorButtonProps["tone"]>,
+  string
+> = {
   digit:
     "h-16 rounded-2xl border border-stone-300/80 bg-stone-100 text-stone-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)] hover:bg-stone-200",
   utility:

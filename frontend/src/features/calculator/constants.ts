@@ -1,8 +1,4 @@
-import type {
-  BinaryOperation,
-  CalculatorState,
-  UnaryOperation,
-} from "./types"
+import type { BinaryOperation, CalculatorState, UnaryOperation } from "./types"
 
 const initialCalculatorState: CalculatorState = {
   displayValue: "0",
