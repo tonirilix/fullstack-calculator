@@ -9,6 +9,8 @@ type CalculatorButtonProps = {
   tone?: "digit" | "utility" | "operator" | "equals"
 }
 
+// Button tones are intentionally scoped to the calculator UI rather than
+// global theme tokens because this take-home has a single visual surface.
 const toneClasses: Record<
   NonNullable<CalculatorButtonProps["tone"]>,
   string
