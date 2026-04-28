@@ -24,7 +24,19 @@ Current backend and UI wiring support:
 - Square root
 - Percentage
 
-Percentage is implemented as `x / 100`.
+## Calculator Behavior Examples
+
+The UI follows an immediate-execution calculator model.
+
+Examples:
+
+- `2 + 2 =` displays `4`
+- `2 + 2 +` displays `4` and prepares the next addition
+- `2 + 2 + 2 =` displays `6`
+- `2 + 3 × 4 =` displays `20`, because chained operations resolve immediately: `(2 + 3) × 4`
+- `9 + 16 √ =` displays `13`, because `√` applies to the currently displayed operand: `9 + √16`
+- `10 %` displays `0.1`, because percentage means `x / 100`
+- `8 ÷ 0 =` displays a recoverable error
 
 ## Local Setup
 
