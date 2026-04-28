@@ -40,6 +40,24 @@ func TestServiceCalculate(t *testing.T) {
 			expected:  5,
 		},
 		{
+			name:      "raises a number to a power",
+			operation: OperationPower,
+			operands:  []float64{2, 3},
+			expected:  8,
+		},
+		{
+			name:      "calculates square root",
+			operation: OperationSqrt,
+			operands:  []float64{9},
+			expected:  3,
+		},
+		{
+			name:      "calculates percentage",
+			operation: OperationPercentage,
+			operands:  []float64{25},
+			expected:  0.25,
+		},
+		{
 			name:      "rejects unknown operation",
 			operation: Operation("modulo"),
 			operands:  []float64{10, 3},
@@ -74,6 +92,36 @@ func TestServiceCalculate(t *testing.T) {
 			operation: OperationDivide,
 			operands:  []float64{10, 0},
 			wantError: ErrDivisionByZero,
+		},
+		{
+			name:      "rejects wrong operand count for power",
+			operation: OperationPower,
+			operands:  []float64{2},
+			wantError: ErrInvalidOperands,
+		},
+		{
+			name:      "rejects wrong operand count for sqrt",
+			operation: OperationSqrt,
+			operands:  []float64{9, 2},
+			wantError: ErrInvalidOperands,
+		},
+		{
+			name:      "rejects wrong operand count for percentage",
+			operation: OperationPercentage,
+			operands:  []float64{},
+			wantError: ErrInvalidOperands,
+		},
+		{
+			name:      "rejects negative square root",
+			operation: OperationSqrt,
+			operands:  []float64{-4},
+			wantError: ErrNegativeSquareRoot,
+		},
+		{
+			name:      "rejects invalid power result",
+			operation: OperationPower,
+			operands:  []float64{-9, 0.5},
+			wantError: ErrInvalidPower,
 		},
 	}
 

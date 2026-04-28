@@ -77,6 +77,12 @@ func mapCalculatorError(err error) (int, string, string) {
 	case errors.Is(err, calculator.ErrDivisionByZero):
 		return http.StatusUnprocessableEntity, "DIVISION_BY_ZERO", "Cannot divide by zero."
 
+	case errors.Is(err, calculator.ErrNegativeSquareRoot):
+		return http.StatusUnprocessableEntity, "NEGATIVE_SQUARE_ROOT", "Cannot calculate the square root of a negative number."
+
+	case errors.Is(err, calculator.ErrInvalidPower):
+		return http.StatusUnprocessableEntity, "INVALID_POWER", "Power result must be a finite real number."
+
 	default:
 		return http.StatusInternalServerError, "INTERNAL_ERROR", "An unexpected error occurred."
 	}

@@ -62,6 +62,51 @@ func TestHandlerCalculate(t *testing.T) {
 				Message: "Cannot divide by zero.",
 			},
 		},
+		{
+			name:       "returns success for sqrt",
+			body:       `{"operation":"sqrt","operands":[16]}`,
+			wantStatus: http.StatusOK,
+			wantResult: 4,
+		},
+		{
+			name:       "returns success for percentage",
+			body:       `{"operation":"percentage","operands":[25]}`,
+			wantStatus: http.StatusOK,
+			wantResult: 0.25,
+		},
+		{
+			name:       "returns success for power",
+			body:       `{"operation":"power","operands":[2,3]}`,
+			wantStatus: http.StatusOK,
+			wantResult: 8,
+		},
+		{
+			name:       "returns negative square root error",
+			body:       `{"operation":"sqrt","operands":[-4]}`,
+			wantStatus: http.StatusUnprocessableEntity,
+			wantError: &apiError{
+				Code:    "NEGATIVE_SQUARE_ROOT",
+				Message: "Cannot calculate the square root of a negative number.",
+			},
+		},
+		{
+			name:       "returns invalid power error",
+			body:       `{"operation":"power","operands":[-9,0.5]}`,
+			wantStatus: http.StatusUnprocessableEntity,
+			wantError: &apiError{
+				Code:    "INVALID_POWER",
+				Message: "Power result must be a finite real number.",
+			},
+		},
+		{
+			name:       "returns invalid operands error for unary operation",
+			body:       `{"operation":"percentage","operands":[10,20]}`,
+			wantStatus: http.StatusBadRequest,
+			wantError: &apiError{
+				Code:    "INVALID_OPERANDS",
+				Message: "invalid operands: percentage requires 1 operand",
+			},
+		},
 	}
 
 	for _, test := range tests {
